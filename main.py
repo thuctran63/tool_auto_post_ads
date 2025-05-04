@@ -188,7 +188,7 @@ def post_X(account):
                         "type": "WEBSITE",
                         "url": link_network
                     },
-                    "title": "xxxx",
+                    "title": title,
                     "type": "DETAILS"
                 }
             ]
