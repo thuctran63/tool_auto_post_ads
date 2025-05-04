@@ -91,13 +91,10 @@ def get_account_info(account):
                     
                 return response.status_code
             else:
-                print(f"Error: {response.status_code} - {response.text}")
                 return response.status_code
         else:
-            print("Không có thông tin chuyển hướng trong response.")
             return response.status_code
     except Exception as e:
-        print(f"Lỗi trong quá trình xử lý: {e}")
         return response.status_code
     
 def get_list_media(account):
@@ -224,8 +221,6 @@ def post_X(account):
             time.sleep(time_sleep_per_post)
             
         except Exception as e:
-            print("❌ Error fetching card_uri:", e)
-            print("Response content:", response.text)
             return response.status_code
     return 200
     
@@ -242,7 +237,7 @@ def process_account(account: Account_X):
             raise Exception(f"Failed to post for {account.user_name}, status code: {status}")
     except Exception as e:
         with file_write_lock:
-            print(f"Error for {account.user_name}: {e}")
+            print(f"Error for {account.user_name}")
             with open("output\\error_log.txt", "a", encoding="utf-8") as f:
                 f.write(f"{account.user_name}\n")
     
