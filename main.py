@@ -1,6 +1,7 @@
 import string
 import threading
 import concurrent.futures
+import time
 import requests
 import json
 from bs4 import BeautifulSoup
@@ -15,6 +16,8 @@ bearer_token = config.get("bearer_token")
 link_network = config.get("link_network")
 title = config.get("title")
 number_of_threads = config.get("number_of_threads")
+number_post = config.get("number_post")
+time_sleep_per_post = config.get("time_sleep_per_post")
 
 cookie_file_path = "input\\cookies.txt"
 user_file_path = "input\\user.txt"
@@ -151,77 +154,80 @@ def get_list_media(account):
     return response.status_code
         
 def post_X(account):
-    url_register_media_ads = f"https://ads-api.x.com/11/accounts/{account.adsAccountId}/cards"
-    headers = {
-        'accept': '*/*',
-        'accept-language': 'en-GB,en;q=0.9,vi-VN;q=0.8,vi;q=0.7,fr-FR;q=0.6,fr;q=0.5,en-US;q=0.4',
-        'content-type': 'application/json',
-        'priority': 'u=1, i',
-        'referer': f'https://ads.x.com/accounts/{account.adsAccountId}/media',
-        'sec-ch-ua': '"Google Chrome";v="135", "Not-A.Brand";v="8", "Chromium";v="135"',
-        'sec-ch-ua-mobile': '?0',
-        'sec-ch-ua-platform': '"Windows"',
-        'sec-fetch-dest': 'empty',
-        'sec-fetch-mode': 'cors',
-        'sec-fetch-site': 'same-origin',
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36',
-        'x-csrf-token': account.ct0,
-        'Cookie': account.cookie,
-        'Authorization': bearer_token,
-        'x-origin-environment': 'production'
-    }
-    name_ads = ''.join(random.choices(string.ascii_uppercase, k=5))
-    json_data = {
-        "name": name_ads,
-        "components": [
-            {
-                "media_key": random.choice(account.medias),
-                "type": "MEDIA"
-            },
-            {
-                "destination": {
-                    "type": "WEBSITE",
-                    "url": link_network
-                },
-                "title": "xxxx",
-                "type": "DETAILS"
-            }
-        ]
-    }
     
-    response = requests.post(url_register_media_ads, headers=headers, json=json_data, proxies=account.proxy)
-    
-    try:
-        response.raise_for_status()
-        response_json = response.json()
-        card_uri = response_json.get("data", {}).get("card_uri")
-        
-        url_post_ads = f"https://ads-api.x.com/11/accounts/{account.adsAccountId}/tweet"
-        
-        params = {
-            "as_user_id": account.adsTargetUserId,
-            "card_uri": card_uri,
-            "nullcast": 'false',
-            "trim_user": 'false',
-            "text": ''.join(random.choices(string.ascii_letters, k=18)),
+    for i in range(number_post):
+        url_register_media_ads = f"https://ads-api.x.com/11/accounts/{account.adsAccountId}/cards"
+        headers = {
+            'accept': '*/*',
+            'accept-language': 'en-GB,en;q=0.9,vi-VN;q=0.8,vi;q=0.7,fr-FR;q=0.6,fr;q=0.5,en-US;q=0.4',
+            'content-type': 'application/json',
+            'priority': 'u=1, i',
+            'referer': f'https://ads.x.com/accounts/{account.adsAccountId}/media',
+            'sec-ch-ua': '"Google Chrome";v="135", "Not-A.Brand";v="8", "Chromium";v="135"',
+            'sec-ch-ua-mobile': '?0',
+            'sec-ch-ua-platform': '"Windows"',
+            'sec-fetch-dest': 'empty',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-site': 'same-origin',
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36',
+            'x-csrf-token': account.ct0,
+            'Cookie': account.cookie,
+            'Authorization': bearer_token,
+            'x-origin-environment': 'production'
+        }
+        name_ads = ''.join(random.choices(string.ascii_uppercase, k=5))
+        json_data = {
             "name": name_ads,
+            "components": [
+                {
+                    "media_key": random.choice(account.medias),
+                    "type": "MEDIA"
+                },
+                {
+                    "destination": {
+                        "type": "WEBSITE",
+                        "url": link_network
+                    },
+                    "title": "xxxx",
+                    "type": "DETAILS"
+                }
+            ]
         }
         
-        response = requests.post(url_post_ads, headers=headers, params=params)
+        response = requests.post(url_register_media_ads, headers=headers, json=json_data, proxies=account.proxy)
         
-        response.raise_for_status()
-        response_json = response.json()
-        tweet_id = response_json.get("data", {}).get("id_str")
-        print("✅ Đăng bài thành công:", tweet_id)
-        url_post_ads = f"https://x.com/{account.user_name}/status/{tweet_id}"
-        write_result_to_file(url_post_ads)
-        
-        return response.status_code
-        
-    except Exception as e:
-        print("❌ Error fetching card_uri:", e)
-        print("Response content:", response.text)
-        return response.status_code
+        try:
+            response.raise_for_status()
+            response_json = response.json()
+            card_uri = response_json.get("data", {}).get("card_uri")
+            
+            url_post_ads = f"https://ads-api.x.com/11/accounts/{account.adsAccountId}/tweet"
+            
+            params = {
+                "as_user_id": account.adsTargetUserId,
+                "card_uri": card_uri,
+                "nullcast": 'false',
+                "trim_user": 'false',
+                "text": ''.join(random.choices(string.ascii_letters, k=18)),
+                "name": name_ads,
+            }
+            
+            response = requests.post(url_post_ads, headers=headers, params=params)
+            
+            response.raise_for_status()
+            response_json = response.json()
+            tweet_id = response_json.get("data", {}).get("id_str")
+            print("✅ Đăng bài thành công:", tweet_id)
+            url_post_ads = f"https://x.com/{account.user_name}/status/{tweet_id}"
+            write_result_to_file(url_post_ads)
+            
+            time.sleep(time_sleep_per_post)
+            
+        except Exception as e:
+            print("❌ Error fetching card_uri:", e)
+            print("Response content:", response.text)
+            return response.status_code
+    return 200
     
 def process_account(account: Account_X):
     try:

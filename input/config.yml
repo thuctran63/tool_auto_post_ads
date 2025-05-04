@@ -2,3 +2,5 @@ bearer_token: "Bearer AAAAAAAAAAAAAAAAAAAAAPnA9gAAAAAAZHpqKYoDdMCaqTUBktzAdK38BG
 link_network: "https://ads.x.com/accounts/18ce55pskui/media"
 title: "OKOK"
 number_of_threads: 1
+number_post: 3
+time_sleep_per_post: 10
